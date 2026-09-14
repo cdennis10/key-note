@@ -92,3 +92,7 @@ Automated tests cover PIN validation and uniqueness, administrator and student s
 Synthetic waveform tests are not real acoustic-piano validation. Microphone results vary with tuning, harmonics, room noise, device processing, distance, and browser hardware. Validate Hard mode on the actual devices and pianos students will use.
 
 Student display names, classroom PINs, preferences, and progress stay in this browser’s local storage and do not sync or leave the device through the app. The app collects no emails, analytics, or advertising identifiers. The hosting provider may retain ordinary web access logs under its own policies.
+
+## Music engraving
+
+Treble- and bass-clef vector outlines are derived from Steinberg's Bravura SMuFL music font and used under the SIL Open Font License 1.1. The vectors are embedded directly in the staff SVG so their shape and line alignment remain identical across browsers.

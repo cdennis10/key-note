@@ -11,7 +11,6 @@
     "check": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json"
   },
   "dependencies": {
-    "@vexflow-fonts/bravura": "^1.0.2",
     "@vitejs/plugin-react": "latest",
     "react": "latest",
     "react-dom": "latest",
