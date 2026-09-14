@@ -124,7 +124,8 @@ legend { font-weight: 700; margin-bottom: 10px; font-size: 14px; }
 .staff { width: 100%; max-width: 660px; display: block; margin: 0 auto 22px; }
 .staff-line, .ledger-line { stroke: #35413e; stroke-width: 2.1; }
 .ledger-line { stroke-width: 2.4; }
-.clef-mark { fill: #263431; }
+.clef-glyph { fill: #263431; font-family: Bravura, serif; font-weight: 400; }
+.clef-glyph--treble, .clef-glyph--bass { font-size: 76px; }
 .clef-label { text-anchor: middle; fill: #7c8783; font-size: 11px; font-weight: 700; letter-spacing: .15em; }
 .target-note ellipse { fill: #25322f; }
 .target-note line { stroke: #25322f; stroke-width: 4; stroke-linecap: round; }
