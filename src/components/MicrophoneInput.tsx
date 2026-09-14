@@ -8,8 +8,9 @@ type MicState = 'needed' | 'starting' | 'listening' | 'sound' | 'uncertain' | 'd
 export function MicrophoneInput({ target, anyOctave, paused, onAttempt }: { target: Note; anyOctave: boolean; paused: boolean; onAttempt: (correct: boolean, detected: string) => void }) {
   const [state, setState] = useState<MicState>('needed')
   const [detail, setDetail] = useState('Microphone access starts only when you choose.')
-  const resources = useRef<{ stream: MediaStream; context: AudioContext; frame: number } | null>(null)
-  const gate = useRef<AttemptGateState>({ sounding: false, candidate: null, since: 0 })
+  const [level, setLevel] = useState(0)
+  const resources = useRef<{ stream: MediaStream; context: AudioContext; frame: number; lastAnalysis: number } | null>(null)
+  const gate = useRef<AttemptGateState>({ sounding: false, candidate: null, since: 0, quietSince: null })
   const targetRef = useRef(target); targetRef.current = target
   const pausedRef = useRef(paused); pausedRef.current = paused
   const onAttemptRef = useRef(onAttempt); onAttemptRef.current = onAttempt
@@ -17,7 +18,7 @@ export function MicrophoneInput({ target, anyOctave, paused, onAttempt }: { targ
   const stop = useCallback(() => {
     const current = resources.current
     if (current) { cancelAnimationFrame(current.frame); current.stream.getTracks().forEach((track) => track.stop()); void current.context.close(); resources.current = null }
-    setState('needed'); setDetail('Listening stopped. Choose Enable microphone to resume.')
+    setLevel(0); setState('needed'); setDetail('Listening stopped. Choose Enable microphone to resume.')
   }, [])
 
   useEffect(() => stop, [stop])
@@ -38,16 +39,19 @@ export function MicrophoneInput({ target, anyOctave, paused, onAttempt }: { targ
       const analyser = context.createAnalyser(); analyser.fftSize = 4096
       context.createMediaStreamSource(stream).connect(analyser)
       const buffer = new Float32Array(analyser.fftSize)
-      const current = { stream, context, frame: 0 }; resources.current = current
+      const current = { stream, context, frame: 0, lastAnalysis: 0 }; resources.current = current
       setState('listening'); setDetail('Listening… play one note at a time and let it ring briefly.')
       const loop = () => {
         if (resources.current !== current) return
-        if (pausedRef.current) { setState('paused'); setDetail('Listening is paused while the app plays sound.'); gate.current = { sounding: false, candidate: null, since: performance.now() }; current.frame = requestAnimationFrame(loop); return }
+        const now = performance.now()
+        if (pausedRef.current) { setLevel(0); setState('paused'); setDetail('Listening is paused while the app plays sound.'); gate.current = { sounding: false, candidate: null, since: now, quietSince: null }; current.frame = requestAnimationFrame(loop); return }
+        if (now - current.lastAnalysis < 50) { current.frame = requestAnimationFrame(loop); return }
+        current.lastAnalysis = now
         analyser.getFloatTimeDomainData(buffer)
         const estimate = detectPitch(buffer, context.sampleRate)
-        const now = performance.now()
+        setLevel(Math.round(Math.min(100, Math.max(0, (estimate.rms - 0.002) / 0.078 * 100))))
         if (!estimate.frequency) {
-          const hadSound = estimate.rms >= 0.012
+          const hadSound = estimate.rms >= 0.006
           setState(hadSound ? 'uncertain' : 'listening')
           setDetail(hadSound ? 'I hear sound, but the pitch is uncertain. Hold one clear note or move closer.' : 'Listening… play one note at a time.')
           gate.current = updateAttemptGate(gate.current, null, estimate.confidence, now).state
@@ -71,6 +75,8 @@ export function MicrophoneInput({ target, anyOctave, paused, onAttempt }: { targ
 
   return <section className="mic-panel" aria-live="polite">
     <div className={`mic-status mic-status--${state}`}><span className="status-dot" /> <strong>{state === 'needed' ? 'Permission needed' : state === 'starting' ? 'Starting' : state === 'listening' ? 'Listening' : state === 'sound' ? 'Sound detected' : state === 'uncertain' ? 'Uncertain pitch' : state === 'paused' ? 'Paused' : 'Microphone unavailable'}</strong></div>
+    <div className="input-meter" role="meter" aria-label="Microphone input level" aria-valuemin={0} aria-valuemax={100} aria-valuenow={level}><span style={{ width: `${level}%` }} /></div>
+    <span className="meter-label">Input level</span>
     <p>{detail}</p>
     {resources.current ? <button className="button button--secondary" type="button" onClick={stop}>Stop listening</button> : <button className="button button--primary" type="button" onClick={start}>Enable microphone</button>}
     <p className="microcopy">Audio is analyzed on this device. It is never recorded, saved, or uploaded.</p>

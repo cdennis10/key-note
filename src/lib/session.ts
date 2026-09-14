@@ -12,17 +12,24 @@ export function finishQuestion(score: Score, firstTry: boolean, assisted: boolea
   }
 }
 
-export type AttemptGateState = { sounding: boolean; candidate: number | null; since: number }
+export type AttemptGateState = { sounding: boolean; candidate: number | null; since: number; quietSince: number | null }
 export function updateAttemptGate(
   state: AttemptGateState,
   midi: number | null,
   confidence: number,
   now: number,
   stableMs = 300,
+  minimumConfidence = 0.7,
+  releaseMs = 160,
 ): { state: AttemptGateState; accepted: number | null } {
-  if (midi === null || confidence < 0.8) return { state: { sounding: false, candidate: null, since: now }, accepted: null }
-  if (state.sounding) return { state, accepted: null }
-  if (state.candidate !== midi) return { state: { sounding: false, candidate: midi, since: now }, accepted: null }
-  if (now - state.since >= stableMs) return { state: { sounding: true, candidate: midi, since: state.since }, accepted: midi }
-  return { state, accepted: null }
+  if (midi === null || confidence < minimumConfidence) {
+    if (!state.sounding) return { state: { sounding: false, candidate: null, since: now, quietSince: null }, accepted: null }
+    const quietSince = state.quietSince ?? now
+    if (now - quietSince >= releaseMs) return { state: { sounding: false, candidate: null, since: now, quietSince: null }, accepted: null }
+    return { state: { ...state, quietSince }, accepted: null }
+  }
+  if (state.sounding) return { state: { ...state, quietSince: null }, accepted: null }
+  if (state.candidate !== midi) return { state: { sounding: false, candidate: midi, since: now, quietSince: null }, accepted: null }
+  if (now - state.since >= stableMs) return { state: { sounding: true, candidate: midi, since: state.since, quietSince: null }, accepted: midi }
+  return { state: { ...state, quietSince: null }, accepted: null }
 }

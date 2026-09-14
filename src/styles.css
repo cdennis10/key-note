@@ -151,6 +151,9 @@ legend { font-weight: 700; margin-bottom: 10px; font-size: 14px; }
 .status-dot { width: 10px; height: 10px; background: #9aa5a0; border-radius: 50%; }
 .mic-status--listening .status-dot, .mic-status--sound .status-dot { background: #3e9b79; box-shadow: 0 0 0 5px rgba(62,155,121,.15); }
 .mic-status--uncertain .status-dot { background: #d59255; }
+.input-meter { height: 8px; max-width: 340px; margin: 15px auto 4px; overflow: hidden; border-radius: 999px; background: #d8e0db; }
+.input-meter span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--sage), #70a984); transition: width .08s linear; }
+.meter-label { display: block; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .1em; }
 .microcopy, .center-copy { color: var(--muted); font-size: 12px; }
 .answer-reveal { border-top: 1px solid var(--line); margin-top: 24px; padding-top: 24px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 18px; text-align: left; }
 .answer-reveal > div > span, .answer-reveal > div > strong { display: block; }
