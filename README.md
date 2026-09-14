@@ -1,4 +1,4 @@
-# Piano Note Trainer
+# Key Note
 
 A private-by-default note-reading practice app for piano students. It is a static React + TypeScript site and needs no backend, API key, database, or runtime service.
 

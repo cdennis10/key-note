@@ -36,7 +36,7 @@ export function AccessGate({ students, onAuthenticated }: { students: Student[];
   return <main className="access-page">
     <section className="access-card" aria-labelledby="access-title">
       <span className="access-mark">♪</span>
-      <p className="eyebrow">Piano Note Trainer</p>
+      <p className="eyebrow">Key Note</p>
       <h1 id="access-title">Welcome back</h1>
       <p className="access-intro">Enter your classroom PIN to begin practicing.</p>
       <div className="pin-inputs" role="group" aria-label="Four-digit PIN">
